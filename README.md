@@ -87,5 +87,7 @@ keymap_amend('n', 'l',  map.close_preview_open_fold)
 keymap_amend('n', 'zo', map.close_preview)
 keymap_amend('n', 'zO', map.close_preview)
 keymap_amend('n', 'zc', map.close_preview_without_defer)
+keymap_amend('n', 'zR', map.close_preview)
+keymap_amend('n', 'zM', map.close_preview_without_defer)
 ```
 

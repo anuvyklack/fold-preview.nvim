@@ -66,6 +66,8 @@ function M.setup(config)
       keymap_amend('n', 'zo', M.mapping.close_preview)
       keymap_amend('n', 'zO', M.mapping.close_preview)
       keymap_amend('n', 'zc', M.mapping.close_preview_without_defer)
+      keymap_amend('n', 'zR', M.mapping.close_preview)
+      keymap_amend('n', 'zM', M.mapping.close_preview_without_defer)
    end
 end
 
