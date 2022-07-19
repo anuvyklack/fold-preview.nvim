@@ -1,0 +1,65 @@
+fold-preview.txt
+================================================================================
+
+--------------------------------------------------------------------------------
+CONFIGURATION						*fold-preview.config*
+
+default_keybindings	boolean
+			default: `true`
+	Set to `false` to disable default keybindings.
+
+border			`"none"` | `"single"` | `"double"` | `"rounded"` | `"solid"` |
+			`"shadow"` | string[]
+			default: `{ ' ', '', ' ', ' ', ' ', ' ', ' ', ' ' }`
+	See: |nvim_open_win()|
+
+--------------------------------------------------------------------------------
+KEYBINDINGS						*fold-preview.keybindings*
+
+--------------------------------------------------------------------------------
+CUSTOM KEYBINDINGS
+
+You can setup custom keymapings using functions from this table:
+>
+    require('fold-preview').mapping
+<
+They are meant to be used with `keymap-amend.nvim` plugin:
+https://github.com/anuvyklack/keymap-amend.nvim
+Read its documentation to find out what is `original` in next functions signatures.
+
+show_close_preview_open_fold({original})
+			Show preview when cursor is inside closed fold.  If
+			preview window is already opened, close it and open
+			fold.  If no closed fold under the cursor, execute
+			original mapping.
+
+close_preview_open_fold({original})
+			If cursor is on closed fold — open it. If preview is
+			opened, it will be closed.  Otherway execute original
+			mapping.
+
+close_preview({original})
+			Close preview (if opened) and execute original mapping.
+
+close_preview_without_defer({original})
+			Close preview immediately: without very small defer
+			which is added in all other functions to avoid annoying
+			screen flickering during fold opening. And execute
+			original mapping.  This function is for when you want to
+			close fold preview without opening fold.
+
+Here are original keybindings:
+>
+    local keymap_amend = require('keymap-amend')
+    local map = require('fold-preview').mapping
+
+    keymap_amend('n', 'h',  map.show_close_preview_open_fold)
+    keymap_amend('n', 'l',  map.close_preview_open_fold)
+    keymap_amend('n', 'zo', map.close_preview)
+    keymap_amend('n', 'zO', map.close_preview)
+    keymap_amend('n', 'zc', map.close_preview_without_defer)
+<
+
+--------------------------------------------------------------------------------
+ vim:tw=80:isk=!-~,^*,^\|,^\":ts=8:noet:ft=help:norl:
+
