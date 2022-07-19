@@ -1,13 +1,10 @@
 local ffi = require("ffi")
 local api = vim.api
 local fn = vim.fn
-local g = vim.g
+local augroup_id = api.nvim_create_augroup('fold_preview', { clear = true })
 local M = {}
 
 ffi.cdef('int curwin_col_off(void);')
-
-local augroup_name = 'fold_preview'
-local augroup_id = api.nvim_create_augroup(augroup_name, { clear = true })
 
 ---Raise a warning message
 ---@param msg string
@@ -20,7 +17,7 @@ end
 ---@class fold-preview.Config
 ---@field border string | string[]
 ---@field default_keybindings boolean
----@field border_shift number[]
+---@field border_shift integer[]
 
 ---@type fold-preview.Config
 M.config = {
@@ -57,7 +54,7 @@ function M.setup(config)
       assert(false, 'Invalid border type or value')
    end
 
-   g.fold_preview_cocked = true
+   M.fold_preview_cocked = true
    if M.config.default_keybindings then
       local ok, keymap_amend = pcall(require, 'keymap-amend')
       if not ok then
@@ -163,7 +160,7 @@ function M.show_preview()
       vim.o.winminheight = winminheight
       vim.api.nvim_clear_autocmds({ group = augroup_id })
       M.close_preview = nil
-      g.fold_preview_cocked = true
+      M.fold_preview_cocked = true
    end
 
    -- close
@@ -207,10 +204,10 @@ M.mapping = {}
 ---If no closed fold under the cursor, execute original mapping.
 ---@param original? function
 function M.mapping.show_close_preview_open_fold(original)
-   if fn.foldclosed('.') ~= -1 and g.fold_preview_cocked then
-      g.fold_preview_cocked = false
+   if fn.foldclosed('.') ~= -1 and M.fold_preview_cocked then
+      M.fold_preview_cocked = false
       M.show_preview()
-   elseif fn.foldclosed('.') ~= -1 and not g.fold_preview_cocked then
+   elseif fn.foldclosed('.') ~= -1 and not M.fold_preview_cocked then
       api.nvim_command('normal! zv') -- open fold
       if M.close_preview then
          -- For smoothness to avoid annoying screen flickering.
@@ -224,7 +221,7 @@ end
 ---Close preview and open fold or execute original mapping.
 ---@param original function
 function M.mapping.close_preview_open_fold(original)
-   if fn.foldclosed('.') ~= -1 and not g.fold_preview_cocked then
+   if fn.foldclosed('.') ~= -1 and not M.fold_preview_cocked then
       api.nvim_command('normal! zv')
       if M.close_preview then
          vim.defer_fn(M.close_preview, 1)
@@ -247,7 +244,7 @@ end
 
 ---Close preview immediately (without very small defer which was added to avoid
 ---flickering during opening fold) and execute original mapping. This function
---should be used, when you want to close fold-preview witout opening fold.
+---should be used, when you want to close fold-preview without opening fold.
 ---@param original? function
 function M.mapping.close_preview_without_defer(original)
    if M.close_preview then M.close_preview() end
