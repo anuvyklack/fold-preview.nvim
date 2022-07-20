@@ -77,6 +77,8 @@ end
 ---Open popup window with folded text preview. Also set autocommands to close
 ---popup window and change its size on scrolling and vim resizing.
 function M.show_preview()
+   if fn.foldclosed('.') == -1 then return end
+
    local config = M.config
 
    ---Current buffer ID
