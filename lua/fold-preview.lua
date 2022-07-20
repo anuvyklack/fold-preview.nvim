@@ -69,8 +69,10 @@ function M.setup(config)
       keymap_amend('n', 'zM', M.mapping.close_preview_without_defer)
    end
 
-   vim.api.nvim_set_hl(0, 'FoldPreview', { link = 'Folded', default = true })
-   vim.api.nvim_set_hl(0, 'FoldPreviewBorder', { link = 'FoldPreview', default = true })
+   -- vim.api.nvim_set_hl(0, 'FoldPreview', { link = 'Folded', default = true })
+   -- vim.api.nvim_set_hl(0, 'FoldPreviewBorder', { link = 'FoldPreview', default = true })
+   vim.api.nvim_set_hl(0, 'FoldPreview', { link = 'NormalFloat', default = true })
+   vim.api.nvim_set_hl(0, 'FoldPreviewBorder', { link = 'FloatBorder', default = true })
 end
 
 ---Open popup window with folded text preview. Also set autocommands to close
