@@ -1,8 +1,37 @@
 fold-preview.txt
 ================================================================================
+CONTENTS                                                            *fold_preview*
+
+    Instalation and setup.................................|fold-preview.setup|
+    Configuration........................................|fold-preview.config|
+    Keybindings......................................|fold-preview.keybinding|
+        Custom keybindings..................................................
+            Main functions..................................................
+            Mapping functions...............................................
+    Highlight.........................................|fold-preview.highlight|
+
+================================================================================
+FOLD-PREVIEW.NVIM
+
+This plugin allows you to preview close folds, without opening them.
 
 --------------------------------------------------------------------------------
-CONFIGURATION						*fold-preview.config*
+INSTALATION AND SETUP					      *fold-preview.setup*
+>
+To install and setup with `packer` plugin manager, use this snippet:
+>
+    use { 'anuvyklack/fold-preview.nvim',
+       requires = 'anuvyklack/keymap-amend.nvim',
+       config = function()
+          require('fold-preview').setup()
+       end
+    }
+<
+--------------------------------------------------------------------------------
+CONFIGURATION						     *fold-preview.config*
+
+To configure the plugin, you need to pass options into `setup()` function inside
+table. Here are available options:
 
 default_keybindings	boolean
 			default: `true`
@@ -16,14 +45,44 @@ border			`"none"` | `"single"` | `"double"` | `"rounded"` | `"solid"` |
 --------------------------------------------------------------------------------
 KEYBINDINGS						*fold-preview.keybindings*
 
+I personally don't want to learn a new key combination to preview folds.
+So I tried to create something that would feel natural.
+
+By default `h` and `l` keys are used.  On first press of `h` key, when cursor is on 
+a closed fold, the preview will be shown.  On second press the preview will be 
+closed and fold will be opened.  When preview is opened, the `l` key will close it
+and open fold.  In all other cases theese keys will work as usual.
+
+A preview window also will be closed on any cursor move, changing mode, or
+buffer leaving.
+
 --------------------------------------------------------------------------------
 CUSTOM KEYBINDINGS
 
-You can setup custom keymapings using functions from this table:
+Main functions~
+
+There three main functions in the `require('fold-preview')` module:
+
+`show_preview()`
+		Open preview window if cursor is on a closed fold.
+
+`close_preview()` | `nil`
+		Close preview if opened, other way this key will be `nil`, so
+		you need to check availability manually.
+
+`toggle_preview()`
+		Close preview if opened, else if cursor is on a closed fold —
+		show preview.
+
+
+Mapping functions~
+
+Also, there are several special functions which allow you to create an interface
+similar to the default one.  They are contains in `mapping` table:
 >
     require('fold-preview').mapping
 <
-They are meant to be used with `keymap-amend.nvim` plugin:
+These functions meant to be used with `keymap-amend.nvim` plugin:
 https://github.com/anuvyklack/keymap-amend.nvim
 Read its documentation to find out what is `original` in next functions signatures.
 
@@ -61,6 +120,13 @@ Here are original keybindings:
     keymap_amend('n', 'zR', map.close_preview)
     keymap_amend('n', 'zM', map.close_preview_without_defer)
 <
+--------------------------------------------------------------------------------
+HIGHLIGHT						  *fold-preview.highlight*
+
+This plugin defines two highlight groups to customize the preview window:
+
+`FloatPreview`		linked to |hl-NormalFloat|
+`FloatPreviewBorder`	linked to `FloatBorder`
 
 --------------------------------------------------------------------------------
  vim:tw=80:isk=!-~,^*,^\|,^\":ts=8:noet:ft=help:norl:
