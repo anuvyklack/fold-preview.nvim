@@ -17,7 +17,7 @@ end
 ---@class fold-preview.Config
 ---@field border string | string[]
 ---@field default_keybindings boolean
----@field border_shift integer[]
+---@field border_shift integer[] Shift of the preview window due to the thikness of each of 4 parts of the border: {up, right, down, left}
 
 ---@type fold-preview.Config
 M.config = {
@@ -35,7 +35,6 @@ function M.setup(config)
    M.config = vim.tbl_deep_extend('force', M.config, config or {}) --[[@as fold-preview.Config]]
    config = M.config
 
-   ---Shifts due to each of the 4 parts of the border: {up, right, down, left}.
    config.border_shift = {}
    if type(config.border) == 'string' then
       if config.border == 'none' then
@@ -91,7 +90,7 @@ function M.show_preview()
 
    -- Some plugins (for example 'beauwilliams/focus.nvim') change this option,
    -- but we need it to make scrolling work correctly.
-   local winminheight = vim.o.winminheight
+   local winminheight = vim.o.winminheight --[[@as integer]]
    vim.o.winminheight = 1
 
    local fold_start = fn.foldclosed('.') -- '.' is the current line
@@ -131,7 +130,7 @@ function M.show_preview()
    ---The width of offset of a window, occupied by line number column,
    ---fold column and sign column.
    ---@type integer
-   local gutter_width = ffi.C.curwin_col_off()
+   local gutter_width = ffi.C.curwin_col_off() ---@diagnostic disable-line
 
    ---The number of columns from the left boundary of the preview window to the
    ---right boundary of the current window.
