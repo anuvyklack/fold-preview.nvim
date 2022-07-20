@@ -197,6 +197,15 @@ function M.show_preview()
 
 end
 
+function M.toggle_preview()
+   if M.close_preview then
+      -- For smoothness to avoid annoying screen flickering.
+      vim.defer_fn(M.close_preview, 1)
+   else
+      M.show_preview()
+   end
+end
+
 ---Functions in this table are meant to be used with the next plugin:
 --- https://github.com/anuvyklack/keymap-amend.nvim
 ---@type table<string, function>
