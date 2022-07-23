@@ -222,7 +222,7 @@ M.mapping = {}
 
 ---Show preview, if preview opened — close it and open fold.
 ---If no closed fold under the cursor, execute original mapping.
----@param original? function
+---@param original function
 function M.mapping.show_close_preview_open_fold(original)
    if fn.foldclosed('.') ~= -1 and M.fold_preview_cocked then
       M.fold_preview_cocked = false
@@ -234,7 +234,7 @@ function M.mapping.show_close_preview_open_fold(original)
          vim.defer_fn(M.close_preview, 1)
       end
    else
-      if original then original() end
+      original()
    end
 end
 
@@ -254,21 +254,21 @@ function M.mapping.close_preview_open_fold(original)
 end
 
 ---Close preview and execute original mapping.
----@param original? function
+---@param original function
 function M.mapping.close_preview(original)
    if M.close_preview then
       vim.defer_fn(M.close_preview, 1)
    end
-   if original then original() end
+   original()
 end
 
 ---Close preview immediately (without very small defer which was added to avoid
 ---flickering during opening fold) and execute original mapping. This function
 ---should be used, when you want to close fold-preview without opening fold.
----@param original? function
+---@param original function
 function M.mapping.close_preview_without_defer(original)
    if M.close_preview then M.close_preview() end
-   if original then original() end
+   original()
 end
 
 return M
