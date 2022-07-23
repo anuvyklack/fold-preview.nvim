@@ -103,7 +103,7 @@ close_preview({original})
 close_preview_without_defer({original})
 			Close preview immediately: without very small defer
 			which is added in all other functions to avoid annoying
-			screen flickering during fold opening. And execute
+			screen flickering during fold opening, and execute
 			original mapping.  This function is for when you want to
 			close fold preview without opening fold.
 
@@ -125,8 +125,8 @@ HIGHLIGHT						  *fold-preview.highlight*
 
 This plugin defines two highlight groups to customize the preview window:
 
-`FloatPreview`		linked to |hl-NormalFloat|
-`FloatPreviewBorder`	linked to `FloatBorder`
+`FoldPreview`		linked to |hl-NormalFloat|
+`FoldPreviewBorder`	linked to `FloatBorder`
 
 --------------------------------------------------------------------------------
  vim:tw=80:isk=!-~,^*,^\|,^\":ts=8:noet:ft=help:norl:

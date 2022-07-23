@@ -106,7 +106,7 @@ signatures.
 
 - `close_preview_without_defer(original)`  
   Close preview immediately: without very small defer which is added in all
-  other functions to avoid annoying screen flickering during fold opening. And
+  other functions to avoid annoying screen flickering during fold opening, and
   execute original mapping.
   This function is for when you want to close fold preview without opening fold.
 
@@ -130,6 +130,6 @@ keymap.amend('n', 'zM', map.close_preview_without_defer)
 
 This plugin defines two highlight groups to customize the preview window:
 
-- `FloatPreview` — linked to `NormalFloat` by default;
-- `FloatPreviewBorder` — linked to `FloatBorder` by default.
+- `FoldPreview` — linked to `NormalFloat` by default;
+- `FoldPreviewBorder` — linked to `FloatBorder` by default.
 
