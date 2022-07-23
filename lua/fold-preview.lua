@@ -167,7 +167,9 @@ function M.show_preview()
       if api.nvim_win_is_valid(winid) then
          api.nvim_win_close(winid, false)
       end
-      api.nvim_buf_delete(bufnr, { force = true, unload = false })
+      if api.nvim_buf_is_valid(bufnr) then
+         api.nvim_buf_delete(bufnr, { force = true, unload = false })
+      end
       vim.o.winminheight = winminheight
       vim.api.nvim_clear_autocmds({ group = augroup_id })
       M.close_preview = nil
