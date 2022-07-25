@@ -107,7 +107,7 @@ close_preview_without_defer({original})
 			original mapping.  This function is for when you want to
 			close fold preview without opening fold.
 
-Here are original keybindings:
+Here are default keybindings:
 >
     local keymap_amend = require('keymap-amend')
     local map = require('fold-preview').mapping

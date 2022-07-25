@@ -110,7 +110,7 @@ signatures.
   execute original mapping.
   This function is for when you want to close fold preview without opening fold.
 
-Here are original keybindings:
+Here are default keybindings:
 
 ```lua
 local keymap = vim.keymap
