@@ -1,90 +1,89 @@
 fold-preview.txt
-================================================================================
-CONTENTS                                                            *fold_preview*
+==============================================================================
+CONTENTS							*fold_preview*
 
     Instalation and setup.................................|fold-preview.setup|
     Configuration........................................|fold-preview.config|
     Keybindings......................................|fold-preview.keybinding|
-        Custom keybindings..................................................
-            Main functions..................................................
-            Mapping functions...............................................
+	Custom keybindings..................................................
+	    Main functions..................................................
+	    Mapping functions...............................................
     Highlight.........................................|fold-preview.highlight|
 
-================================================================================
+==============================================================================
 FOLD-PREVIEW.NVIM
 
 This plugin allows you to preview close folds, without opening them.
 
---------------------------------------------------------------------------------
-INSTALATION AND SETUP					      *fold-preview.setup*
+------------------------------------------------------------------------------
+INSTALATION AND SETUP					*fold-preview.setup*
 >
 To install and setup with `packer` plugin manager, use this snippet:
 >
     use { 'anuvyklack/fold-preview.nvim',
        requires = 'anuvyklack/keymap-amend.nvim',
        config = function()
-          require('fold-preview').setup()
+	  require('fold-preview').setup()
        end
     }
 <
---------------------------------------------------------------------------------
-CONFIGURATION						     *fold-preview.config*
+------------------------------------------------------------------------------
+CONFIGURATION						*fold-preview.config*
 
 To configure the plugin, you need to pass options into `setup()` function inside
 table. Here are available options:
 
 default_keybindings	boolean
 			default: `true`
-	Set to `false` to disable default keybindings.
+		Set to `false` to disable default keybindings.
 
 border			`"none"` | `"single"` | `"double"` | `"rounded"` | `"solid"` |
 			`"shadow"` | string[]
 			default: `{ ' ', '', ' ', ' ', ' ', ' ', ' ', ' ' }`
-	See: |nvim_open_win()|
+		See: |nvim_open_win()|.
 
---------------------------------------------------------------------------------
-KEYBINDINGS						*fold-preview.keybindings*
+------------------------------------------------------------------------------
+KEYBINDINGS					    *fold-preview.keybindings*
 
 I personally don't want to learn a new key combination to preview folds.
 So I tried to create something that would feel natural.
 
-By default `h` and `l` keys are used.  On first press of `h` key, when cursor is on 
-a closed fold, the preview will be shown.  On second press the preview will be 
-closed and fold will be opened.  When preview is opened, the `l` key will close it
-and open fold.  In all other cases theese keys will work as usual.
+By default `h` and `l` keys are used.  On first press of `h` key, when cursor
+is on a closed fold, the preview will be shown.  On second press the preview
+will be closed and fold will be opened.  When preview is opened, the `l` key
+will close it and open fold.	In all other cases theese keys will work as
+usual.
 
 A preview window also will be closed on any cursor move, changing mode, or
 buffer leaving.
 
---------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 CUSTOM KEYBINDINGS
 
 Main functions~
 
 There three main functions in the `require('fold-preview')` module:
 
-`show_preview()`
-		Open preview window if cursor is on a closed fold.
+show_preview()		Open preview window if cursor is on a closed fold.
 
-`close_preview()` | `nil`
-		Close preview if opened, other way this key will be `nil`, so
-		you need to check availability manually.
+close_preview() | `nil`
+			Close preview if opened, other way this key will be
+			`nil`, so you need to check availability manually.
 
-`toggle_preview()`
-		Close preview if opened, else if cursor is on a closed fold —
-		show preview.
+toggle_preview()	Close preview if opened, else if cursor is on a closed
+			fold — show preview.
 
 
 Mapping functions~
 
-Also, there are several special functions which allow you to create an interface
-similar to the default one.  They are contains in `mapping` table:
+Also, there are several special functions which allow you to create an
+interface similar to the default one.  They are contains in `mapping` table:
 >
     require('fold-preview').mapping
 <
 These functions meant to be used with `keymap-amend.nvim` plugin:
-https://github.com/anuvyklack/keymap-amend.nvim
-Read its documentation to find out what is `original` in next functions signatures.
+https://github.com/anuvyklack/keymap-amend.nvim   Read its documentation to
+find out what is `original` in next functions signatures.
 
 show_close_preview_open_fold({original})
 			Show preview when cursor is inside closed fold.  If
@@ -102,10 +101,10 @@ close_preview({original})
 
 close_preview_without_defer({original})
 			Close preview immediately: without very small defer
-			which is added in all other functions to avoid annoying
-			screen flickering during fold opening, and execute
-			original mapping.  This function is for when you want to
-			close fold preview without opening fold.
+			which is added in all other functions to avoid
+			annoying screen flickering during fold opening, and
+			execute original mapping.  This function is for when
+			you want to close fold preview without opening fold.
 
 Here are default keybindings:
 >
@@ -120,14 +119,14 @@ Here are default keybindings:
     keymap_amend('n', 'zR', map.close_preview)
     keymap_amend('n', 'zM', map.close_preview_without_defer)
 <
---------------------------------------------------------------------------------
-HIGHLIGHT						  *fold-preview.highlight*
+------------------------------------------------------------------------------
+HIGHLIGHT					      *fold-preview.highlight*
 
 This plugin defines two highlight groups to customize the preview window:
 
 `FoldPreview`		linked to |hl-NormalFloat|
 `FoldPreviewBorder`	linked to `FloatBorder`
 
---------------------------------------------------------------------------------
- vim:tw=80:isk=!-~,^*,^\|,^\":ts=8:noet:ft=help:norl:
+------------------------------------------------------------------------------
+ vim:ft=help:noet:tw=78:isk=!-~,^*,^\|,^\":ts=8:norl:
 
