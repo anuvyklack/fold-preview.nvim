@@ -211,7 +211,9 @@ end
 function M.toggle_preview()
    if M.close_preview then
       -- For smoothness to avoid annoying screen flickering.
-      vim.defer_fn(M.close_preview, 1)
+      vim.defer_fn(function()
+         if M.close_preview then M.close_preview() end
+      end, 1)
    else
       M.show_preview()
    end
@@ -231,10 +233,10 @@ function M.mapping.show_close_preview_open_fold(original)
       M.show_preview()
    elseif fn.foldclosed('.') ~= -1 and not M.fold_preview_cocked then
       api.nvim_command('normal! zv') -- open fold
-      if M.close_preview then
-         -- For smoothness to avoid annoying screen flickering.
-         vim.defer_fn(M.close_preview, 1)
-      end
+      -- For smoothness to avoid annoying screen flickering.
+      vim.defer_fn(function()
+         if M.close_preview then M.close_preview() end
+      end, 1)
    else
       original()
    end
@@ -245,9 +247,9 @@ end
 function M.mapping.close_preview_open_fold(original)
    if fn.foldclosed('.') ~= -1 and not M.fold_preview_cocked then
       api.nvim_command('normal! zv')
-      if M.close_preview then
-         vim.defer_fn(M.close_preview, 1)
-      end
+      vim.defer_fn(function()
+         if M.close_preview then M.close_preview() end
+      end, 1)
    elseif fn.foldclosed('.') ~= -1 then
       api.nvim_command('normal! zv') -- open fold
    else
@@ -258,9 +260,9 @@ end
 ---Close preview and execute original mapping.
 ---@param original function
 function M.mapping.close_preview(original)
-   if M.close_preview then
-      vim.defer_fn(M.close_preview, 1)
-   end
+   vim.defer_fn(function()
+      if M.close_preview then M.close_preview() end
+   end, 1)
    original()
 end
 
