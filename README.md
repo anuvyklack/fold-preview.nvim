@@ -133,8 +133,8 @@ keymap.amend('n', 'zM', map.close_preview_without_defer)
 
 Another choice is to use `K`, since it is already utilized for LSP hover preview
 (as [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) suggests). 
-**Pay attention that your LSP settings are loaded before `fold-preview.nvim` to
-make `keymap-amend` correctly handle key mappings!**
+**Pay attention** that your LSP settings are loaded before `fold-preview.nvim` to
+make `keymap-amend` function correctly handle key mappings!
 
 ```lua
 use { 'anuvyklack/fold-preview.nvim',
