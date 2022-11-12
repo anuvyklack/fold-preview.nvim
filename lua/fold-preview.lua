@@ -76,7 +76,6 @@ end
 
 ---Open popup window with folded text preview. Also set autocommands to close
 ---popup window and change its size on scrolling and vim resizing.
----@return boolean
 function M.show_preview()
    local fold_start = fn.foldclosed('.') -- '.' is the current line
    if fold_start == -1 then
@@ -209,11 +208,10 @@ end
 function M.toggle_preview()
    if M.close_preview then
       -- For smoothness to avoid annoying screen flickering.
-      vim.defer_fn(function()
-         if M.close_preview then M.close_preview() end
-      end, 1)
+      vim.defer_fn(M.close_preview, 1)
+      return true
    else
-      M.show_preview()
+      return M.show_preview()
    end
 end
 
@@ -276,3 +274,4 @@ function M.mapping.close_preview_without_defer(original)
 end
 
 return M
+
