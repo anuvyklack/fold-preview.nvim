@@ -1,7 +1,8 @@
 local ffi = require("ffi")
 local api = vim.api
 local fn = vim.fn
-local augroup_id = api.nvim_create_augroup('fold_preview', { clear = true })
+local o, wo, bo = vim.o, vim.wo, vim.bo
+local augroup = api.nvim_create_augroup('fold_preview', { clear = true })
 local M = {}
 
 ffi.cdef('int curwin_col_off(void);')
@@ -32,8 +33,8 @@ function M.setup(config)
       return
    end
 
-   M.config = vim.tbl_deep_extend('force', M.config, config or {}) --[[@as fold-preview.Config]]
-   config = M.config
+   config = vim.tbl_deep_extend('force', M.config, config or {}) --[[@as fold-preview.Config]]
+   M.config = config
 
    config.border_shift = {}
    if type(config.border) == 'string' then
@@ -69,50 +70,35 @@ function M.setup(config)
       keymap_amend('n', 'zM', M.mapping.close_preview_without_defer)
    end
 
-   -- vim.api.nvim_set_hl(0, 'FoldPreview', { link = 'Folded', default = true })
-   -- vim.api.nvim_set_hl(0, 'FoldPreviewBorder', { link = 'FoldPreview', default = true })
-   vim.api.nvim_set_hl(0, 'FoldPreview', { link = 'NormalFloat', default = true })
-   vim.api.nvim_set_hl(0, 'FoldPreviewBorder', { link = 'FloatBorder', default = true })
+   api.nvim_set_hl(0, 'FoldPreview', { link = 'NormalFloat', default = true })
+   api.nvim_set_hl(0, 'FoldPreviewBorder', { link = 'FloatBorder', default = true })
 end
 
 ---Open popup window with folded text preview. Also set autocommands to close
 ---popup window and change its size on scrolling and vim resizing.
+---@return boolean
 function M.show_preview()
-   if fn.foldclosed('.') == -1 then return end
-
+   local fold_start = fn.foldclosed('.') -- '.' is the current line
+   if fold_start == -1 then
+      return false
+   end
+   local fold_end = fn.foldclosedend('.')
    local config = M.config
 
-   ---Current buffer ID
-   ---@type number
-   local curbufnr = api.nvim_get_current_buf()
-
    ---Current window ID, i.e window from which preview was opened.
-   ---@type number
    local curwin = api.nvim_get_current_win()
 
    -- Some plugins (for example 'beauwilliams/focus.nvim') change this option,
    -- but we need it to make scrolling work correctly.
-   local winminheight = vim.o.winminheight --[[@as integer]]
-   vim.o.winminheight = 1
-
-   local fold_start = fn.foldclosed('.') -- '.' is the current line
-   if fold_start == -1 then return end
-   local fold_end = fn.foldclosedend('.')
-
-   ---@cast fold_start integer
-   ---@cast fold_end integer
+   local winminheight = o.winminheight
+   o.winminheight = 1
 
    ---The number of folded lines.
    local fold_size = fold_end - fold_start + 1
 
-   ---The number of window rows from the current cursor line to the end of the
-   ---window. I.e. room below for float window.
-   local room_below = api.nvim_win_get_height(0) - fn.winline() + 1 --[[@as integer]]
-
    ---The maximum line length of the folded region.
    local max_line_len = 0
 
-   --- @type string[]
    local folded_lines = api.nvim_buf_get_lines(0, fold_start - 1, fold_end, true)
    local indent = #(folded_lines[1]:match('^%s+') or '')
    for i, line in ipairs(folded_lines) do
@@ -120,25 +106,34 @@ function M.show_preview()
          line = line:sub(indent + 1)
       end
       folded_lines[i] = line
-      local line_len = fn.strdisplaywidth(line)  --[[@as integer]]
+      local line_len = fn.strdisplaywidth(line)
       if line_len > max_line_len then max_line_len = line_len end
    end
 
    local bufnr = api.nvim_create_buf(false, true)
    api.nvim_buf_set_lines(bufnr, 0, 1, false, folded_lines)
-   vim.bo[bufnr].filetype = vim.bo.filetype
-   vim.bo[bufnr].modifiable = false
+   bo[bufnr].filetype = bo.filetype
+   bo[bufnr].modifiable = false
 
    ---The width of offset of a window, occupied by line number column,
    ---fold column and sign column.
    ---@type integer
-   local gutter_width = ffi.C.curwin_col_off() ---@diagnostic disable-line
+   local text_offset = ffi.C.curwin_col_off() ---@diagnostic disable-line
 
    ---The number of columns from the left boundary of the preview window to the
    ---right boundary of the current window.
-   local room_right = api.nvim_win_get_width(0) - gutter_width - indent
+   local room_right = api.nvim_win_get_width(0) - text_offset - indent
 
-   ---@type integer
+   ---The height of the winbar.
+   local winbar = (wo.winbar ~= '') and 1 or 0
+
+   ---The number of window rows from the current cursor line to the end of the
+   ---window. I.e. room below for float window.
+   local room_below = api.nvim_win_get_height(0) - winbar - fn.winline()
+   if room_below == 0 then
+      return false
+   end
+
    local winid = api.nvim_open_win(bufnr, false, {
       border = config.border,
       relative = 'win',
@@ -149,19 +144,18 @@ function M.show_preview()
       -- The position of the window relative to 'bufpos' field.
       row = config.border_shift[1],
       col = config.border_shift[4],
-
-      width = max_line_len + 2 < room_right and max_line_len + 1 or room_right - 1,
+      width = (max_line_len + 2 < room_right) and max_line_len + 1 or room_right - 1,
       height = fold_size < room_below and fold_size or room_below,
       style = 'minimal',
       focusable = false,
       noautocmd = true
    })
-   vim.o.eventignore = 'all'
-   vim.wo[winid].winhighlight = 'NormalFloat:FoldPreview,FloatBorder:FoldPreviewBorder'
-   vim.wo[winid].foldenable = false
-   vim.wo[winid].signcolumn = 'no'
-   vim.wo[winid].conceallevel = vim.wo[curwin].conceallevel
-   vim.o.eventignore = nil
+   o.eventignore = 'all'
+   wo[winid].winhighlight = 'NormalFloat:FoldPreview,FloatBorder:FoldPreviewBorder'
+   wo[winid].foldenable = false
+   wo[winid].signcolumn = 'no'
+   wo[winid].conceallevel = wo[curwin].conceallevel
+   o.eventignore = nil
 
    function M.close_preview()
       if api.nvim_win_is_valid(winid) then
@@ -171,14 +165,17 @@ function M.show_preview()
          api.nvim_buf_delete(bufnr, { force = true, unload = false })
       end
       vim.o.winminheight = winminheight
-      vim.api.nvim_clear_autocmds({ group = augroup_id })
+      api.nvim_clear_autocmds({ group = augroup })
       M.close_preview = nil
       M.fold_preview_cocked = true
    end
 
+   ---Current buffer ID
+   local curbufnr = api.nvim_get_current_buf()
+
    -- close
    api.nvim_create_autocmd({ 'CursorMoved', 'ModeChanged', 'BufLeave' }, {
-      group = augroup_id,
+      group = augroup,
       once = true,
       buffer = curbufnr,
       callback = M.close_preview
@@ -186,10 +183,10 @@ function M.show_preview()
 
    -- window scrolled
    api.nvim_create_autocmd('WinScrolled', {
-      group = augroup_id,
+      group = augroup,
       buffer = curbufnr,
       callback = function()
-         room_below = api.nvim_win_get_height(0) - fn.winline() + 1 --[[@as integer]]
+         room_below = api.nvim_win_get_height(0) - fn.winline() + 1
          api.nvim_win_set_height(winid,
             fold_size < room_below and fold_size or room_below)
       end
@@ -197,15 +194,16 @@ function M.show_preview()
 
    -- vim resize
    api.nvim_create_autocmd('VimResized', {
-      group = augroup_id,
+      group = augroup,
       buffer = curbufnr,
       callback = function()
-         room_right = api.nvim_win_get_width(0) - gutter_width - indent --[[@as integer]]
+         room_right = api.nvim_win_get_width(0) - text_offset - indent --[[@as integer]]
          api.nvim_win_set_width(winid,
             max_line_len < room_right and max_line_len or room_right)
       end
    })
 
+   return true
 end
 
 function M.toggle_preview()
@@ -221,22 +219,24 @@ end
 
 ---Functions in this table are meant to be used with the next plugin:
 --- https://github.com/anuvyklack/keymap-amend.nvim
----@type table<string, function>
 M.mapping = {}
 
 ---Show preview, if preview opened — close it and open fold.
 ---If no closed fold under the cursor, execute original mapping.
 ---@param original function
 function M.mapping.show_close_preview_open_fold(original)
-   if fn.foldclosed('.') ~= -1 and M.fold_preview_cocked then
-      M.fold_preview_cocked = false
-      M.show_preview()
-   elseif fn.foldclosed('.') ~= -1 and not M.fold_preview_cocked then
-      api.nvim_command('normal! zv') -- open fold
-      -- For smoothness to avoid annoying screen flickering.
-      vim.defer_fn(function()
-         if M.close_preview then M.close_preview() end
-      end, 1)
+   if fn.foldclosed('.') ~= -1 then -- fold exist
+      if M.fold_preview_cocked then
+         local ok = M.show_preview()
+         if ok then
+            M.fold_preview_cocked = false
+         end
+      else
+         api.nvim_command('normal! zv') -- open fold
+         vim.defer_fn(function() -- For smoothness to avoid annoying screen flickering.
+            if M.close_preview then M.close_preview() end
+         end, 1)
+      end
    else
       original()
    end
@@ -245,13 +245,13 @@ end
 ---Close preview and open fold or execute original mapping.
 ---@param original function
 function M.mapping.close_preview_open_fold(original)
-   if fn.foldclosed('.') ~= -1 and not M.fold_preview_cocked then
-      api.nvim_command('normal! zv')
-      vim.defer_fn(function()
-         if M.close_preview then M.close_preview() end
-      end, 1)
-   elseif fn.foldclosed('.') ~= -1 then
+   if fn.foldclosed('.') ~= -1 then -- fold exist
       api.nvim_command('normal! zv') -- open fold
+      if not M.fold_preview_cocked then
+         vim.defer_fn(function() -- For smoothness to avoid annoying screen flickering.
+            if M.close_preview then M.close_preview() end
+         end, 1)
+      end
    else
       original()
    end
