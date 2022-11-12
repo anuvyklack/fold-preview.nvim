@@ -16,6 +16,7 @@ https://user-images.githubusercontent.com/13056013/148261501-56677c8f-24a7-4c45-
     * [Custom keybindings](#custom-keybindings)
         * [Main functions](#main-functions)
         * [Mapping functions](#mapping-functions)
+        * [Using `K` for fold preview](#using-k-for-fold-preview)
 * [Highlight](#highlight)
 
 <!-- vim-markdown-toc -->
@@ -69,15 +70,17 @@ buffer leaving.
 
 There three main functions in the `require('fold-preview')` module:
 
-- `show_preview()`  
-  Open preview window if cursor is on a closed fold.
+- `show_preview() -> boolean`  
+  Open preview window if cursor is on a closed fold and return `true`, else
+  return `false`.
 
 - `close_preview()` | `nil`  
   Close preview if opened, other way this key will be `nil`, so you need to
   check availability manually.
 
-- `toggle_preview()`  
+- `toggle_preview() -> boolean`  
   Close preview if opened, else if cursor is on a closed fold — show preview.
+  If no opened preview to close, and cursor not on a closed fold, return `false`.
 
 #### Mapping functions
 
@@ -124,6 +127,44 @@ keymap.amend('n', 'zO', map.close_preview)
 keymap.amend('n', 'zc', map.close_preview_without_defer)
 keymap.amend('n', 'zR', map.close_preview)
 keymap.amend('n', 'zM', map.close_preview_without_defer)
+```
+
+#### Using `K` for fold preview
+
+Another choice is to use `K`, since it is already utilized for LSP hover preview
+(as [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) suggests). 
+**Pay attention that your LSP settings are loaded before `fold-preview.nvim` to
+make `keymap-amend` correctly handle key mappings!**
+
+```lua
+use { 'anuvyklack/fold-preview.nvim',
+   requires = 'anuvyklack/keymap-amend.nvim',
+   config = function()
+      local fp = require('fold-preview')
+      local map = require('fold-preview').mapping
+      local keymap = vim.keymap
+      keymap.amend = require('keymap-amend')
+
+      fp.setup({ 
+         default_keybindings = false
+         -- another settings
+      })
+
+      keymap.amend('n', 'K', function(original)
+         if not fp.show_preview() then original() end
+         -- or
+         -- if not fp.toggle_preview() then original() end
+         -- to close preview on second press on K.
+      end)
+      keymap.amend('n', 'h',  map.close_preview_open_fold)
+      keymap.amend('n', 'l',  map.close_preview_open_fold)
+      keymap.amend('n', 'zo', map.close_preview)
+      keymap.amend('n', 'zO', map.close_preview)
+      keymap.amend('n', 'zc', map.close_preview_without_defer)
+      keymap.amend('n', 'zR', map.close_preview)
+      keymap.amend('n', 'zM', map.close_preview_without_defer)
+   end
+}
 ```
 
 ## Highlight
