@@ -1,11 +1,8 @@
-local ffi = require("ffi")
 local api = vim.api
 local fn = vim.fn
 local o, wo, bo = vim.o, vim.wo, vim.bo
 local augroup = api.nvim_create_augroup('fold_preview', { clear = true })
 local M = {}
-
-ffi.cdef('int curwin_col_off(void);')
 
 ---Raise a warning message
 ---@param msg string
@@ -19,6 +16,14 @@ end
 ---@field border string | string[]
 ---@field default_keybindings boolean
 ---@field border_shift integer[] Shift of the preview window due to the thikness of each of 4 parts of the border: {up, right, down, left}
+
+---The width of offset of the window, occupied by line number column,
+---fold column and sign column.
+---@param winid integer
+---@return integer
+local function get_text_offset(winid)
+  return fn.getwininfo(winid)[1].textoff
+end
 
 ---@type fold-preview.Config
 M.config = {
@@ -117,7 +122,7 @@ function M.show_preview()
    ---The width of offset of a window, occupied by line number column,
    ---fold column and sign column.
    ---@type integer
-   local text_offset = ffi.C.curwin_col_off() ---@diagnostic disable-line
+   local text_offset = get_text_offset(curwin)
 
    ---The number of columns from the left boundary of the preview window to the
    ---right boundary of the current window.
