@@ -162,7 +162,7 @@ function M.show_preview()
    wo[winid].conceallevel = wo[curwin].conceallevel
    o.eventignore = nil
 
-   function M.close_preview()
+   function M._close_preview()
       if api.nvim_win_is_valid(winid) then
          api.nvim_win_close(winid, false)
       end
@@ -171,7 +171,7 @@ function M.show_preview()
       end
       vim.o.winminheight = winminheight
       api.nvim_clear_autocmds({ group = augroup })
-      M.close_preview = nil
+      M._close_preview = nil
       M.fold_preview_cocked = true
    end
 
@@ -183,7 +183,7 @@ function M.show_preview()
       group = augroup,
       once = true,
       buffer = curbufnr,
-      callback = M.close_preview
+      callback = M._close_preview
    })
 
    -- window scrolled
@@ -211,13 +211,29 @@ function M.show_preview()
    return true
 end
 
-function M.toggle_preview()
-   if M.close_preview then
-      -- For smoothness to avoid annoying screen flickering.
-      vim.defer_fn(M.close_preview, 1)
+---Close preview float window.
+---
+---If passed `true`, then preview closing will be deferred for a very small
+---period of time for smoothness to avoid annoying screen flickering.
+---@param do_defer? boolean
+function M.close_preview(do_defer)
+   if M._close_preview then
+      if do_defer then
+         vim.defer_fn(function()
+            -- Addition check, because function could disappear while we waited.
+            if M._close_preview then M._close_preview() end
+         end, 1)
+      else
+         M._close_preview()
+      end
       return true
-   else
-      return M.show_preview()
+   end
+   return false
+end
+
+function M.toggle_preview()
+   if M.close_preview(true) then return true
+   else return M.show_preview()
    end
 end
 
@@ -237,9 +253,7 @@ function M.mapping.show_close_preview_open_fold(original)
          end
       else
          api.nvim_command('normal! zv') -- open fold
-         vim.defer_fn(function() -- For smoothness to avoid annoying screen flickering.
-            if M.close_preview then M.close_preview() end
-         end, 1)
+         M.close_preview(true)
       end
    else
       original()
@@ -252,9 +266,7 @@ function M.mapping.close_preview_open_fold(original)
    if fn.foldclosed('.') ~= -1 then -- fold exist
       api.nvim_command('normal! zv') -- open fold
       if not M.fold_preview_cocked then
-         vim.defer_fn(function() -- For smoothness to avoid annoying screen flickering.
-            if M.close_preview then M.close_preview() end
-         end, 1)
+         M.close_preview(true)
       end
    else
       original()
@@ -264,9 +276,7 @@ end
 ---Close preview and execute original mapping.
 ---@param original function
 function M.mapping.close_preview(original)
-   vim.defer_fn(function()
-      if M.close_preview then M.close_preview() end
-   end, 1)
+   M.close_preview(true)
    original()
 end
 
@@ -275,7 +285,7 @@ end
 ---should be used, when you want to close fold-preview without opening fold.
 ---@param original function
 function M.mapping.close_preview_without_defer(original)
-   if M.close_preview then M.close_preview() end
+   M.close_preview(false)
    original()
 end
 

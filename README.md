@@ -74,9 +74,8 @@ There three main functions in the `require('fold-preview')` module:
   Open preview window if cursor is on a closed fold and return `true`, else
   return `false`.
 
-- `close_preview()` | `nil`  
-  Close preview if opened, other way this key will be `nil`, so you need to
-  check availability manually.
+- `close_preview() -> boolean`  
+  Close preview if opened.
 
 - `toggle_preview() -> boolean`  
   Close preview if opened, else if cursor is on a closed fold — show preview.
