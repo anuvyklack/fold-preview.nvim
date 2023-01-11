@@ -139,15 +139,16 @@ function M.show_preview()
    end
 
    local winid = api.nvim_open_win(bufnr, false, {
+      anchor = 'NW',
       border = config.border,
       relative = 'win',
       bufpos = {
          fold_start - 1, -- zero-indexed, that's why minus one
-         indent,
+         0
       },
       -- The position of the window relative to 'bufpos' field.
       row = config.border_shift[1],
-      col = config.border_shift[4],
+      col = indent + config.border_shift[4],
       width = (max_line_len + 2 < room_right) and max_line_len + 1 or room_right - 1,
       height = fold_size < room_below and fold_size or room_below,
       style = 'minimal',
