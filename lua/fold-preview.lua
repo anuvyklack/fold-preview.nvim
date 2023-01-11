@@ -8,14 +8,9 @@ local M = {}
 ---@param msg string
 local function warn(msg)
    vim.schedule(function()
-      vim.notify_once('[pretty-fold.nvim] '..msg, vim.log.levels.WARN)
+      vim.notify_once(msg, vim.log.levels.WARN, { title = 'pretty-fold.nvim ' })
    end)
 end
-
----@class fold-preview.Config
----@field border string | string[]
----@field default_keybindings boolean
----@field border_shift integer[] Shift of the preview window due to the thikness of each of 4 parts of the border: {up, right, down, left}
 
 ---The width of offset of the window, occupied by line number column,
 ---fold column and sign column.
@@ -25,8 +20,15 @@ local function get_text_offset(winid)
   return fn.getwininfo(winid)[1].textoff
 end
 
+---@class fold-preview.Config
+---@field auto integer | false
+---@field border string | string[]
+---@field default_keybindings boolean
+---@field border_shift integer[] #Shift of the preview window due to the thikness of each of 4 parts of the border: {up, right, down, left}
+
 ---@type fold-preview.Config
 M.config = {
+   auto = false, -- 400
    default_keybindings = true,
    border = { ' ', '', ' ', ' ', ' ', ' ', ' ', ' ' },
 }
@@ -60,6 +62,7 @@ function M.setup(config)
    end
 
    M.fold_preview_cocked = true
+
    if M.config.default_keybindings then
       local ok, keymap_amend = pcall(require, 'keymap-amend')
       if not ok then
@@ -73,6 +76,42 @@ function M.setup(config)
       keymap_amend('n', 'zc', M.mapping.close_preview_without_defer)
       keymap_amend('n', 'zR', M.mapping.close_preview)
       keymap_amend('n', 'zM', M.mapping.close_preview_without_defer)
+   end
+
+   -- Open preview automatically when cursor enters fold.
+   if M.config.auto then
+      if M.config.auto == 'true' then
+         warn('"auto" option should be integer or `false`')
+      end
+      api.nvim_create_autocmd('CursorMoved', {
+         callback = function()
+            local curwin = api.nvim_get_current_win()
+            local line = api.nvim_win_get_cursor(curwin)[1]
+
+            local function callback()
+               if M.timer then
+                  M.timer:stop()
+                  M.timer:close()
+                  M.timer = nil
+               end
+
+               if curwin == api.nvim_get_current_win()
+                  and line == api.nvim_win_get_cursor(curwin)[1]
+                  and fn.foldclosed('.') ~= -1
+               then
+                  M.show_preview()
+                  M.fold_preview_cocked = false
+               end
+            end
+
+            if M.timer then
+               M.timer:stop()
+            else
+               M.timer = vim.loop.new_timer()
+            end
+            M.timer:start(M.config.auto, 0, vim.schedule_wrap(callback))
+         end
+      })
    end
 
    api.nvim_set_hl(0, 'FoldPreview', { link = 'NormalFloat', default = true })

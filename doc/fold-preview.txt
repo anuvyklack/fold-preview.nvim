@@ -24,6 +24,8 @@ To install and setup with `packer` plugin manager, use this snippet:
        requires = 'anuvyklack/keymap-amend.nvim',
        config = function()
 	  require('fold-preview').setup()
+             -- Your configuration goes here.
+	  )
        end
     }
 <
@@ -32,6 +34,12 @@ CONFIGURATION						*fold-preview.config*
 
 To configure the plugin, you need to pass options into `setup()` function inside
 table. Here are available options:
+
+auto			integer | `false`
+			default: `false`
+		Automatically open preview if cursor enters and stays in
+		folded line for specified number of milliseconds.  400 is
+		decent value.
 
 default_keybindings	boolean
 			default: `true`

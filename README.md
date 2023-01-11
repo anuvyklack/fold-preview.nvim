@@ -10,6 +10,7 @@ https://user-images.githubusercontent.com/13056013/148261501-56677c8f-24a7-4c45-
 
 * [Instalation and setup](#instalation-and-setup)
 * [Configuration](#configuration)
+    * [`auto`](#auto)
     * [`default_keybindings`](#default_keybindings)
     * [`border`](#border)
 * [Keybindings](#keybindings)
@@ -30,15 +31,23 @@ use this snippet:
 use { 'anuvyklack/fold-preview.nvim',
    requires = 'anuvyklack/keymap-amend.nvim',
    config = function()
-      require('fold-preview').setup()
+      require('fold-preview').setup({
+         -- Your configuration goes here.
+      })
    end
 }
 ```
 
 ## Configuration
 
-To configure the plugin, you need to pass options into `setup()` function inside
-table. Below are available options.
+To configure the plugin, you need to pass options into `setup()` function within
+the table like this. Below are all available options.
+
+### `auto`
+`integer | false`   (default: `false`)
+
+Automatically open preview if cursor enters and stays in folded line for
+specified number of milliseconds (400 is decent value).
 
 ### `default_keybindings`
 `boolean`   (default: `true`)
