@@ -143,10 +143,13 @@ function M.show_preview()
    local max_line_len = 0
 
    local folded_lines = api.nvim_buf_get_lines(0, fold_start - 1, fold_end, true)
-   local indent = #(folded_lines[1]:match('^%s+') or '')
+   local blank_chars = folded_lines[1]:match('^%s+') or ''
+   local indent = #(blank_chars:gsub("\t", string.rep(" ", vim.bo.tabstop)))
+   local nbc = #blank_chars
+
    for i, line in ipairs(folded_lines) do
-      if indent > 0 then
-         line = line:sub(indent + 1)
+      if nbc > 0 then
+         line = line:sub(nbc + 1)
       end
       folded_lines[i] = line
       local line_len = fn.strdisplaywidth(line)
@@ -165,7 +168,7 @@ function M.show_preview()
 
    ---The number of columns from the left boundary of the preview window to the
    ---right boundary of the current window.
-   local room_right = api.nvim_win_get_width(0) - text_offset - indent
+   local room_right = api.nvim_win_get_width(0) - get_text_offset(curwin) - indent
 
    ---The height of the winbar.
    local winbar = (wo.winbar ~= '') and 1 or 0
@@ -241,7 +244,7 @@ function M.show_preview()
       group = augroup,
       buffer = curbufnr,
       callback = function()
-         room_right = api.nvim_win_get_width(0) - text_offset - indent --[[@as integer]]
+         room_right = api.nvim_win_get_width(0) - get_text_offset(curwin) - indent
          api.nvim_win_set_width(winid,
             max_line_len < room_right and max_line_len or room_right)
       end
