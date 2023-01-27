@@ -80,7 +80,7 @@ function M.setup(config)
 
    -- Open preview automatically when cursor enters fold.
    if M.config.auto then
-      if M.config.auto == 'true' then
+      if M.config.auto == true then
          warn('"auto" option should be integer or `false`')
       end
       api.nvim_create_autocmd('CursorMoved', {
