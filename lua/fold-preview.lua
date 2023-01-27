@@ -131,6 +131,9 @@ function M.show_preview()
    ---Current window ID, i.e window from which preview was opened.
    local curwin = api.nvim_get_current_win()
 
+   ---Current buffer ID
+   local curbufnr = api.nvim_get_current_buf()
+
    -- Some plugins (for example 'beauwilliams/focus.nvim') change this option,
    -- but we need it to make scrolling work correctly.
    local winminheight = o.winminheight
@@ -160,11 +163,6 @@ function M.show_preview()
    api.nvim_buf_set_lines(bufnr, 0, 1, false, folded_lines)
    bo[bufnr].filetype = bo.filetype
    bo[bufnr].modifiable = false
-
-   ---The width of offset of a window, occupied by line number column,
-   ---fold column and sign column.
-   ---@type integer
-   local text_offset = get_text_offset(curwin)
 
    ---The number of columns from the left boundary of the preview window to the
    ---right boundary of the current window.
@@ -216,9 +214,6 @@ function M.show_preview()
       M._close_preview = nil
       M.fold_preview_cocked = true
    end
-
-   ---Current buffer ID
-   local curbufnr = api.nvim_get_current_buf()
 
    -- close
    api.nvim_create_autocmd({ 'CursorMoved', 'ModeChanged', 'BufLeave' }, {
