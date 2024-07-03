@@ -195,12 +195,10 @@ function M.show_preview()
       focusable = false,
       noautocmd = true
    })
-   o.eventignore = 'all'
    wo[winid].winhighlight = 'NormalFloat:FoldPreview,FloatBorder:FoldPreviewBorder'
    wo[winid].foldenable = false
    wo[winid].signcolumn = 'no'
    wo[winid].conceallevel = wo[curwin].conceallevel
-   o.eventignore = nil
 
    function M._close_preview()
       if api.nvim_win_is_valid(winid) then
